@@ -11,6 +11,7 @@ Built using React JS, TypeScript and Tailwind CSS.
 - Add more information to the details page
   - Evolutions
   - Description of the pokemon
+- Paginate search results instead of capping at 20
 
 ## PokeAPI
 

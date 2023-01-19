@@ -26,6 +26,9 @@ const ThumbnailCard: FC<ThumbnailProps> = ({ pokemonName }) => {
                     id: pokeDetails.id,
                     number: pokeDetails.id.toString().padStart(3, '0'),
                     frontDefaultSpriteURL: pokeDetails.sprites.front_default,
+                    frontDreamWorldSpriteURL: pokeDetails.sprites.other.dream_world.front_default,
+                    frontPokemonHomeSprite: pokeDetails.sprites.other.home.front_default,
+                    frontOfficialArtworkSprite: pokeDetails.sprites.other['official-artwork'].front_default,
                     types: pokeDetails.types.map((type: any) => {
                         return type.type.name
                     }),
@@ -45,6 +48,8 @@ const ThumbnailCard: FC<ThumbnailProps> = ({ pokemonName }) => {
         backgroundImage: (pokemon && pokemon.types.length > 1) ? `linear-gradient(to top left, ${typeColours[pokemon.types[1]]}, 35%, transparent)` : 'none'
     }
 
+    let imageURL = pokemon ? ((pokemon.frontDefaultSpriteURL ?? pokemon.frontDreamWorldSpriteURL) ?? pokemon.frontPokemonHomeSprite) ?? pokemon.frontOfficialArtworkSprite : undefined;
+
     return (
         <>
             {isLoading && <SkeletonThumbnailCard />}
@@ -54,7 +59,7 @@ const ThumbnailCard: FC<ThumbnailProps> = ({ pokemonName }) => {
                         <h1 className='capitalize text-2xl font-bold'>{pokemon.name}</h1>
                         <h3 className='text-lg'>{`#${pokemon.number}`}</h3>
                         <div className='w-[186px]'>
-                            <img className='w-full block animate-[slight-bounce_1s_ease_infinite]' src={pokemon.frontDefaultSpriteURL} alt={pokemon.name} />
+                            <img className='w-full block animate-[slight-bounce_1s_ease_infinite]' src={imageURL} alt={pokemon.name} />
                         </div>
                         <div className='flex justify-evenly w-full'>
                             {pokemon.types.map((type, index) => {

@@ -34,6 +34,7 @@ const Detail = () => {
                     frontDefaultSpriteURL: pokeDetails.sprites.front_default,
                     frontDreamWorldSpriteURL: pokeDetails.sprites.other.dream_world.front_default,
                     frontPokemonHomeSprite: pokeDetails.sprites.other.home.front_default,
+                    frontOfficialArtworkSprite: pokeDetails.sprites.other['official-artwork'].front_default,
                     height: pokeDetails.height,
                     weight: pokeDetails.weight,
                     types: pokeDetails.types.map((type: any) => {

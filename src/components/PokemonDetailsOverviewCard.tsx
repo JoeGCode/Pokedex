@@ -9,7 +9,7 @@ const PokemonDetailsOverviewCard: FC<PokemonDetailsPokemon> = ({ pokemon }) => {
         backgroundImage: pokemon.types.length > 1 ? `linear-gradient(to top left, ${typeColours[pokemon.types[1]]}, 35%, transparent)` : 'none'
     }
 
-    const imageURL = (pokemon.frontPokemonHomeSprite ?? pokemon.frontDreamWorldSpriteURL) ?? pokemon.frontDefaultSpriteURL;
+    const imageURL = ((pokemon.frontPokemonHomeSprite ?? pokemon.frontDreamWorldSpriteURL) ?? pokemon.frontDefaultSpriteURL) ?? pokemon.frontOfficialArtworkSprite;
 
     return (
         <div style={cardStyle} className='flex flex-col shadow-lg items-center justify-center p-4 rounded-2xl relative bg-slate-200 mt-28'>

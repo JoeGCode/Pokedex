@@ -5,6 +5,7 @@ export type PokemonDetails = {
     frontDefaultSpriteURL: string,
     frontDreamWorldSpriteURL: string,
     frontPokemonHomeSprite: string,
+    frontOfficialArtworkSprite: string,
     types: string[],
     height: number, // height is received in decimetres
     weight: number, // weight is received in hectograms, 1 hectogram = 100 grams
@@ -21,6 +22,9 @@ export type PokemonThumbnail = {
     id: number,
     number: string,
     frontDefaultSpriteURL: string,
+    frontDreamWorldSpriteURL: string,
+    frontPokemonHomeSprite: string,
+    frontOfficialArtworkSprite: string,
     types: string[],
 }
 
