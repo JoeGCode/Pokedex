@@ -46,11 +46,11 @@ const ThumbnailCard: FC<ThumbnailProps> = ({ pokemonName }) => {
     }
 
     return (
-        <div className='flex-[1_1_100%] max-w-full sm:flex-[0_0_48%] sm:max-w-[48%] lg:flex-[0_0_22%] lg:max-w-[22%]'>
+        <>
             {isLoading && <SkeletonThumbnailCard />}
             {(!isLoading && pokemon) &&
                 <Link to={`/details/${pokemon.name}`} >
-                    <div style={style} className='flex flex-col shadow-lg items-center justify-center mb-4 p-4 rounded-2xl cursor-pointer transition-transform hover:scale-105'>
+                    <div style={style} className='flex flex-col shadow-lg items-center justify-center p-4 rounded-2xl cursor-pointer transition-transform hover:scale-105'>
                         <h1 className='capitalize text-2xl font-bold'>{pokemon.name}</h1>
                         <h3 className='text-lg'>{`#${pokemon.number}`}</h3>
                         <div className='w-[186px]'>
@@ -64,7 +64,7 @@ const ThumbnailCard: FC<ThumbnailProps> = ({ pokemonName }) => {
                     </div>
                 </Link>
             }
-        </div>
+        </>
     )
 }
 

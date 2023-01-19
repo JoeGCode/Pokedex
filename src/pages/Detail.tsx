@@ -74,9 +74,11 @@ const Detail = () => {
     }
 
     return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col items-center justify-center'>
+        <div className='max-w-screen-2xl w-full'>
             {pokemon && isFound && renderDetailsPage(pokemon)}
             {!isFound && <NotFoundCard />}
+        </div>
         </div>
     )
 }

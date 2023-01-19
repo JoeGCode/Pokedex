@@ -85,10 +85,14 @@ const Home: FC = () => {
     }
 
     return (
-        <div className='flex flex-col pb-20'>
+        <div className='flex flex-col items-center justify-center'>
+        <div className='pb-20 w-full max-w-screen-2xl'>
             <SearchBar setSearch={setSearchTerm} />
-            <div className='flex flex-wrap items-center justify-between'>
-                {pokemonNotFound && <NotFoundCard />}
+            {pokemonNotFound && (
+                <div className='max-w-screen-md w-full mx-auto'><NotFoundCard /></div>
+            )}
+            <div className='w-full grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+                
                 {!pokemonNotFound && (!searchedPokemon || searchedPokemon.length === 0) && loadedPokemon?.map((name, index) => {
                     return <ThumbnailCard pokemonName={name} key={index} />
                 })}
@@ -96,7 +100,8 @@ const Home: FC = () => {
                     return <ThumbnailCard pokemonName={name} key={index} />
                 })}
             </div>
-            {(!searchedPokemon || searchedPokemon.length === 0) && <Pagination startFrom={startFrom} resultsLength={allPokemonNames.length} resultsPerPage={RESULTS_PER_PAGE} setStart={setStartFrom} />}
+            {!pokemonNotFound && (!searchedPokemon || searchedPokemon.length === 0) && <Pagination startFrom={startFrom} resultsLength={allPokemonNames.length} resultsPerPage={RESULTS_PER_PAGE} setStart={setStartFrom} />}
+        </div>
         </div>
     )
 }
