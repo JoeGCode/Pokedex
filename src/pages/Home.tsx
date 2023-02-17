@@ -1,109 +1,187 @@
-import axios from 'axios';
-import React, { FC, useEffect, useState } from 'react'
-import NotFoundCard from '../components/NotFoundCard';
-import Pagination from '../components/Pagination';
-import SearchBar from '../components/SearchBar';
-import ThumbnailCard from '../components/ThumbnailCard';
-import api from '../services/api';
-import { AllPokemonResults } from '../types'
+import axios from "axios";
+import React, { FC, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import NotFoundCard from "../components/NotFoundCard";
+import Pagination from "../components/Pagination";
+import SearchBar from "../components/SearchBar";
+import ThumbnailCard from "../components/ThumbnailCard";
+import api from "../services/api";
+import { AllPokemonResults } from "../types";
 
 const Home: FC = () => {
-    const [loadedPokemon, setLoadedPokemon] = useState<string[]>([]);
-    const [searchterm, setSearchTerm] = useState<string>("");
-    const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
-    const [startFrom, setStartFrom] = useState(0);
-    const [searchedPokemon, setSearchedPokemon] = useState<string[]>([]);
-    const [pokemonNotFound, setPokemonNotFound] = useState(false);
+  const [loadedPokemon, setLoadedPokemon] = useState<string[]>([]);
+  const [searchterm, setSearchTerm] = useState<string>("");
+  const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
+  //   const [startFrom, setStartFrom] = useState(0);
+  const [searchedPokemon, setSearchedPokemon] = useState<string[]>([]);
+  const [pokemonNotFound, setPokemonNotFound] = useState(false);
 
-    const RESULTS_PER_PAGE = 20;
+  const [searchParams, setSearchParams] = useSearchParams({});
+  // const startFrom = searchParams.get("startFrom") ?? "0";
+  const startFrom = (): string => {
+    let startFromQuery = searchParams.get("startFrom") ?? "0";
+    if (isStringANumber(startFromQuery, true)) return startFromQuery;
+    else return "0";
+  };
 
-    useEffect(() => {
-        if (!allPokemonNames?.length) {
-            loadAllPokemon();
-        }
-    }, []);
+  const RESULTS_PER_PAGE = 20;
 
-    async function loadAllPokemon() {
-        let res = await axios.get(api.requestAllPokemon);
-        let results: AllPokemonResults[] = res.data.results;
-        let allPokemon: string[] = results.map((pokemon, index) => pokemon.name);
-        setAllPokemonNames(allPokemon);
+  useEffect(() => {
+    if (!allPokemonNames?.length) {
+      getAllPokemonNames();
     }
+  }, []);
 
-    useEffect(() => {
-        let filtered = allPokemonNames.slice(startFrom, startFrom + RESULTS_PER_PAGE) ?? [];
-        setLoadedPokemon(filtered);
-    }, [allPokemonNames, startFrom]);
+  // Just get all the names of the pokemon available from the api
+  // Can use this to check if a search is valid before calling the api again
+  async function getAllPokemonNames() {
+    let res = await axios.get(api.requestAllPokemon);
+    let results: AllPokemonResults[] = res.data.results;
+    let allPokemon: string[] = results.map((pokemon, index) => pokemon.name);
+    setAllPokemonNames(allPokemon);
+  }
 
-    useEffect(() => {
-        searchPokemon(searchterm);
-    }, [searchterm]);
-
-    async function searchPokemon(value: string) {
-        setSearchedPokemon([]);
-        let parsedNumber = +value;
-        if (value && (isNaN(parsedNumber) || parsedNumber === 0)) {
-            let filteredPokemon = filterAllPokemon(value);
-            if (filteredPokemon.length > 0) {
-                setSearchedPokemon(filteredPokemon);
-                setPokemonNotFound(false);
-            } else {
-                setPokemonNotFound(true);
-            }
-
-        } else if (value && !isNaN(parsedNumber) && parsedNumber > 0) {
-            searchByNumber(parsedNumber);
-        } else {
-            // No value, so just reset
-            setPokemonNotFound(false);
-        }
-
+  useEffect(() => {
+    let start = 0;
+    if (isStringANumber(startFrom(), false)) {
+      start = +startFrom();
     }
+    filterAndLoadPokemon(start);
+  }, [allPokemonNames]);
 
-    async function searchByNumber(num: number) {
-        try {
-            let detailResults = await axios.get(api.requestPokemon + num);
-            let searched: string[] = [];
+  function filterAndLoadPokemon(start: number) {
+    let filtered = allPokemonNames.slice(start, start + RESULTS_PER_PAGE) ?? [];
+    setLoadedPokemon(filtered);
+  }
 
-            if (detailResults.status === 200) {
-                let pokeDetails = detailResults.data;
-                searched.push(pokeDetails.name);
-
-                setSearchedPokemon(searched);
-                setPokemonNotFound(false);
-            } else {
-                setPokemonNotFound(true);
-            }
-        } catch (error) {
-            console.log(error);
-            setPokemonNotFound(true);
-        }
+  useEffect(() => {
+    if (isStringANumber(startFrom(), true)) {
+      filterAndLoadPokemon(+startFrom());
     }
+  }, [startFrom()]);
 
-    function filterAllPokemon(searchFilter: string) {
-        return allPokemonNames.filter((name) => name.toLowerCase().includes(searchFilter.toLowerCase())).slice(0, RESULTS_PER_PAGE);
+  function nextPage() {
+    if (isStringANumber(startFrom(), true)) {
+      setSearchParams({
+        startFrom: (+startFrom() + RESULTS_PER_PAGE).toString(),
+      });
     }
+  }
 
-    return (
-        <div className='flex flex-col items-center justify-center'>
-        <div className='pb-20 w-full max-w-screen-2xl'>
-            <SearchBar setSearch={setSearchTerm} />
-            {pokemonNotFound && (
-                <div className='max-w-screen-md w-full mx-auto'><NotFoundCard /></div>
-            )}
-            <div className='w-full grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
-                
-                {!pokemonNotFound && (!searchedPokemon || searchedPokemon.length === 0) && loadedPokemon?.map((name, index) => {
-                    return <ThumbnailCard pokemonName={name} key={index} />
-                })}
-                {!pokemonNotFound && searchedPokemon && searchedPokemon?.map((name, index) => {
-                    return <ThumbnailCard pokemonName={name} key={index} />
-                })}
-            </div>
-            {!pokemonNotFound && (!searchedPokemon || searchedPokemon.length === 0) && <Pagination startFrom={startFrom} resultsLength={allPokemonNames.length} resultsPerPage={RESULTS_PER_PAGE} setStart={setStartFrom} />}
+  function previousPage() {
+    if (isStringANumber(startFrom(), true)) {
+      setSearchParams({
+        startFrom: (+startFrom() - RESULTS_PER_PAGE).toString(),
+      });
+    }
+  }
+
+  useEffect(() => {
+    searchPokemon(searchterm);
+  }, [searchterm]);
+
+  async function searchPokemon(value: string) {
+    setSearchedPokemon([]);
+    let parsedNumber = +value; // Shorthand for parsing a number from a string
+    if (value && (isNaN(parsedNumber) || parsedNumber === 0)) {
+      let filteredPokemon = filterAllPokemon(value);
+      if (filteredPokemon.length > 0) {
+        setSearchedPokemon(filteredPokemon);
+        setPokemonNotFound(false);
+        setSearchParams({ query: value });
+      } else {
+        setPokemonNotFound(true);
+      }
+    } else if (value && !isNaN(parsedNumber) && parsedNumber > 0) {
+      searchByNumber(parsedNumber);
+    } else {
+      // No value, so just reset
+      setPokemonNotFound(false);
+    }
+  }
+
+  async function searchByNumber(num: number) {
+    try {
+      let detailResults = await axios.get(api.requestPokemon + num);
+      let searched: string[] = [];
+
+      if (detailResults.status === 200) {
+        let pokeDetails = detailResults.data;
+        searched.push(pokeDetails.name);
+
+        setSearchedPokemon(searched);
+        setPokemonNotFound(false);
+      } else {
+        setPokemonNotFound(true);
+      }
+    } catch (error) {
+      console.log(error);
+      setPokemonNotFound(true);
+    }
+  }
+
+  function filterAllPokemon(searchFilter: string) {
+    return allPokemonNames
+      .filter((name) => name.toLowerCase().includes(searchFilter.toLowerCase()))
+      .slice(0, RESULTS_PER_PAGE);
+  }
+
+  function isStringANumber(value: string, includeZero: boolean): boolean {
+    if (includeZero) {
+      return value != null && !isNaN(+value) && +value >= 0;
+    } else {
+      return value != null && !isNaN(+value) && +value > 0;
+    }
+  }
+
+  function showPaginationButton(nextButton: boolean): boolean {
+    const resultsLength = allPokemonNames.length;
+    let showPreviousButton = false;
+    let showNextButton = true;
+    if (isStringANumber(startFrom(), true)) {
+      if (nextButton) {
+        return +startFrom() + RESULTS_PER_PAGE <= resultsLength ? true : false;
+      } else {
+        return +startFrom() - RESULTS_PER_PAGE >= 0 ? true : false;
+      }
+    } else {
+      return nextButton ? true : false;
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <div className="pb-20 w-full max-w-screen-2xl">
+        <SearchBar setSearch={setSearchTerm} />
+        {pokemonNotFound && (
+          <div className="max-w-screen-md w-full mx-auto">
+            <NotFoundCard />
+          </div>
+        )}
+        <div className="w-full grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {!pokemonNotFound &&
+            (!searchedPokemon || searchedPokemon.length === 0) &&
+            loadedPokemon?.map((name, index) => {
+              return <ThumbnailCard pokemonName={name} key={index} />;
+            })}
+          {!pokemonNotFound &&
+            searchedPokemon &&
+            searchedPokemon?.map((name, index) => {
+              return <ThumbnailCard pokemonName={name} key={index} />;
+            })}
         </div>
-        </div>
-    )
-}
+        {!pokemonNotFound &&
+          (!searchedPokemon || searchedPokemon.length === 0) && (
+            <Pagination
+              nextPage={nextPage}
+              previousPage={previousPage}
+              showNextButton={showPaginationButton(true)}
+              showPreviousButton={showPaginationButton(false)}
+            />
+          )}
+      </div>
+    </div>
+  );
+};
 
-export default Home
+export default Home;
