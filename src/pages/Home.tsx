@@ -18,10 +18,10 @@ const Home: FC = () => {
 
   const [searchParams, setSearchParams] = useSearchParams({});
   // const startFrom = searchParams.get("startFrom") ?? "0";
-  const startFrom = (): string => {
+  const startFrom = (): number => {
     let startFromQuery = searchParams.get("startFrom") ?? "0";
-    if (isStringANumber(startFromQuery, true)) return startFromQuery;
-    else return "0";
+    if (isStringANumber(startFromQuery, true)) return +startFromQuery;
+    else return 0;
   };
 
   const RESULTS_PER_PAGE = 20;
@@ -42,11 +42,7 @@ const Home: FC = () => {
   }
 
   useEffect(() => {
-    let start = 0;
-    if (isStringANumber(startFrom(), false)) {
-      start = +startFrom();
-    }
-    filterAndLoadPokemon(start);
+    filterAndLoadPokemon(startFrom());
   }, [allPokemonNames]);
 
   function filterAndLoadPokemon(start: number) {
@@ -55,25 +51,19 @@ const Home: FC = () => {
   }
 
   useEffect(() => {
-    if (isStringANumber(startFrom(), true)) {
-      filterAndLoadPokemon(+startFrom());
-    }
+    filterAndLoadPokemon(startFrom());
   }, [startFrom()]);
 
   function nextPage() {
-    if (isStringANumber(startFrom(), true)) {
-      setSearchParams({
-        startFrom: (+startFrom() + RESULTS_PER_PAGE).toString(),
-      });
-    }
+    setSearchParams({
+      startFrom: (startFrom() + RESULTS_PER_PAGE).toString(),
+    });
   }
 
   function previousPage() {
-    if (isStringANumber(startFrom(), true)) {
-      setSearchParams({
-        startFrom: (+startFrom() - RESULTS_PER_PAGE).toString(),
-      });
-    }
+    setSearchParams({
+      startFrom: (startFrom() - RESULTS_PER_PAGE).toString(),
+    });
   }
 
   useEffect(() => {
@@ -136,16 +126,10 @@ const Home: FC = () => {
 
   function showPaginationButton(nextButton: boolean): boolean {
     const resultsLength = allPokemonNames.length;
-    let showPreviousButton = false;
-    let showNextButton = true;
-    if (isStringANumber(startFrom(), true)) {
-      if (nextButton) {
-        return +startFrom() + RESULTS_PER_PAGE <= resultsLength ? true : false;
-      } else {
-        return +startFrom() - RESULTS_PER_PAGE >= 0 ? true : false;
-      }
+    if (nextButton) {
+      return startFrom() + RESULTS_PER_PAGE <= resultsLength ? true : false;
     } else {
-      return nextButton ? true : false;
+      return startFrom() - RESULTS_PER_PAGE >= 0 ? true : false;
     }
   }
 
