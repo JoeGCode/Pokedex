@@ -10,11 +10,9 @@ import { AllPokemonResults } from "../types";
 
 const Home: FC = () => {
   const [loadedPokemon, setLoadedPokemon] = useState<string[]>([]);
-  // const [searchterm, setSearchTerm] = useState<string>("");
   const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
-  //   const [startFrom, setStartFrom] = useState(0);
-  const [searchedPokemon, setSearchedPokemon] = useState<string[]>([]);
   const [pokemonNotFound, setPokemonNotFound] = useState(false);
+  const [showPaginationButtons, setShowPaginationButtons] = useState(true);
 
   const [searchParams, setSearchParams] = useSearchParams({});
 
@@ -42,10 +40,13 @@ const Home: FC = () => {
     homePageInit();
     if (query) {
       searchPokemon(query);
+      setShowPaginationButtons(false);
     } else if (startFromParam) {
       filterPokemonByPageAndLoad(startFrom());
+      setShowPaginationButtons(true);
     } else {
       filterPokemonByPageAndLoad(0);
+      setShowPaginationButtons(true);
     }
   }
 
@@ -84,21 +85,37 @@ const Home: FC = () => {
   }
 
   async function searchPokemon(value: string) {
-    setSearchedPokemon([]);
-    let parsedNumber = +value; // Shorthand for parsing a number from a string
-    if (value && (isNaN(parsedNumber) || parsedNumber === 0)) {
-      let filteredPokemon = filterPokemonBySearch(value);
-      if (filteredPokemon.length > 0) {
-        setLoadedPokemon(filteredPokemon);
-        setPokemonNotFound(false);
-      } else {
-        setPokemonNotFound(true);
-      }
-    } else if (value && !isNaN(parsedNumber) && parsedNumber > 0) {
-      searchByNumber(parsedNumber);
+    // let parsedNumber = +value; // Shorthand for parsing a number from a string
+    // if (value && (isNaN(parsedNumber) || parsedNumber === 0)) {
+    //   let filteredPokemon = filterPokemonBySearch(value);
+    //   if (filteredPokemon.length > 0) {
+    //     setLoadedPokemon(filteredPokemon);
+    //     setPokemonNotFound(false);
+    //   } else {
+    //     setPokemonNotFound(true);
+    //   }
+    // } else if (value && !isNaN(parsedNumber) && parsedNumber > 0) {
+    //   searchByNumber(parsedNumber);
+    // } else {
+    //   // No value, so just reset
+    //   setPokemonNotFound(false);
+    // }
+
+    if (isStringANumber(value, false)) {
+      searchByNumber(+value);
     } else {
-      // No value, so just reset
-      setPokemonNotFound(false);
+      if (value != null) {
+        let filteredPokemon = filterPokemonBySearch(value);
+        if (filteredPokemon.length > 0) {
+          setLoadedPokemon(filteredPokemon);
+          setPokemonNotFound(false);
+        } else {
+          setPokemonNotFound(true);
+        }
+      } else {
+        // No value, so just reset
+        setPokemonNotFound(false);
+      }
     }
   }
 
@@ -111,7 +128,7 @@ const Home: FC = () => {
         let pokeDetails = detailResults.data;
         searched.push(pokeDetails.name);
 
-        setSearchedPokemon(searched);
+        setLoadedPokemon(searched);
         setPokemonNotFound(false);
       } else {
         setPokemonNotFound(true);
@@ -156,25 +173,19 @@ const Home: FC = () => {
         )}
         <div className="w-full grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {!pokemonNotFound &&
-            (!searchedPokemon || searchedPokemon.length === 0) &&
+            loadedPokemon?.length &&
             loadedPokemon?.map((name, index) => {
               return <ThumbnailCard pokemonName={name} key={index} />;
             })}
-          {!pokemonNotFound &&
-            searchedPokemon &&
-            searchedPokemon?.map((name, index) => {
-              return <ThumbnailCard pokemonName={name} key={index} />;
-            })}
         </div>
-        {!pokemonNotFound &&
-          (!searchedPokemon || searchedPokemon.length === 0) && (
-            <Pagination
-              nextPage={nextPage}
-              previousPage={previousPage}
-              showNextButton={showPaginationButton(true)}
-              showPreviousButton={showPaginationButton(false)}
-            />
-          )}
+        {!pokemonNotFound && showPaginationButtons && (
+          <Pagination
+            nextPage={nextPage}
+            previousPage={previousPage}
+            showNextButton={showPaginationButton(true)}
+            showPreviousButton={showPaginationButton(false)}
+          />
+        )}
       </div>
     </div>
   );
