@@ -10,14 +10,14 @@ import { AllPokemonResults } from "../types";
 
 const Home: FC = () => {
   const [loadedPokemon, setLoadedPokemon] = useState<string[]>([]);
-  const [searchterm, setSearchTerm] = useState<string>("");
+  // const [searchterm, setSearchTerm] = useState<string>("");
   const [allPokemonNames, setAllPokemonNames] = useState<string[]>([]);
   //   const [startFrom, setStartFrom] = useState(0);
   const [searchedPokemon, setSearchedPokemon] = useState<string[]>([]);
   const [pokemonNotFound, setPokemonNotFound] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams({});
-  // const startFrom = searchParams.get("startFrom") ?? "0";
+
   const startFrom = (): number => {
     let startFromQuery = searchParams.get("startFrom") ?? "0";
     if (isStringANumber(startFromQuery, true)) return +startFromQuery;
@@ -27,10 +27,27 @@ const Home: FC = () => {
   const RESULTS_PER_PAGE = 20;
 
   useEffect(() => {
-    if (!allPokemonNames?.length) {
+    homePageInit();
+  }, []);
+
+  function homePageInit() {
+    if (allPokemonNames?.length === 0) {
       getAllPokemonNames();
     }
-  }, []);
+  }
+
+  function checkAndLoadFromUrlParams() {
+    const query = searchParams.get("query");
+    const startFromParam = searchParams.get("startFrom");
+    homePageInit();
+    if (query) {
+      searchPokemon(query);
+    } else if (startFromParam) {
+      filterPokemonByPageAndLoad(startFrom());
+    } else {
+      filterPokemonByPageAndLoad(0);
+    }
+  }
 
   // Just get all the names of the pokemon available from the api
   // Can use this to check if a search is valid before calling the api again
@@ -42,17 +59,13 @@ const Home: FC = () => {
   }
 
   useEffect(() => {
-    filterAndLoadPokemon(startFrom());
-  }, [allPokemonNames]);
+    checkAndLoadFromUrlParams();
+  }, [allPokemonNames, searchParams]);
 
-  function filterAndLoadPokemon(start: number) {
+  function filterPokemonByPageAndLoad(start: number) {
     let filtered = allPokemonNames.slice(start, start + RESULTS_PER_PAGE) ?? [];
     setLoadedPokemon(filtered);
   }
-
-  useEffect(() => {
-    filterAndLoadPokemon(startFrom());
-  }, [startFrom()]);
 
   function nextPage() {
     setSearchParams({
@@ -66,19 +79,18 @@ const Home: FC = () => {
     });
   }
 
-  useEffect(() => {
-    searchPokemon(searchterm);
-  }, [searchterm]);
+  function searchHandler(value: string) {
+    setSearchParams({ query: value });
+  }
 
   async function searchPokemon(value: string) {
     setSearchedPokemon([]);
     let parsedNumber = +value; // Shorthand for parsing a number from a string
     if (value && (isNaN(parsedNumber) || parsedNumber === 0)) {
-      let filteredPokemon = filterAllPokemon(value);
+      let filteredPokemon = filterPokemonBySearch(value);
       if (filteredPokemon.length > 0) {
-        setSearchedPokemon(filteredPokemon);
+        setLoadedPokemon(filteredPokemon);
         setPokemonNotFound(false);
-        setSearchParams({ query: value });
       } else {
         setPokemonNotFound(true);
       }
@@ -110,7 +122,7 @@ const Home: FC = () => {
     }
   }
 
-  function filterAllPokemon(searchFilter: string) {
+  function filterPokemonBySearch(searchFilter: string) {
     return allPokemonNames
       .filter((name) => name.toLowerCase().includes(searchFilter.toLowerCase()))
       .slice(0, RESULTS_PER_PAGE);
@@ -136,7 +148,7 @@ const Home: FC = () => {
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="pb-20 w-full max-w-screen-2xl">
-        <SearchBar setSearch={setSearchTerm} />
+        <SearchBar searchHandler={searchHandler} />
         {pokemonNotFound && (
           <div className="max-w-screen-md w-full mx-auto">
             <NotFoundCard />
