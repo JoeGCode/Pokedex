@@ -6,7 +6,7 @@ Built using React JS, TypeScript and Tailwind CSS.
 
 ## Planned updates
 
-- [ ] Desktop styling
+- [x] Desktop styling
 - [x] Keep data when returning to previous page (i.e. your search or what page you're on)
 - [ ] Add more information to the details page
   - [ ] Evolutions
