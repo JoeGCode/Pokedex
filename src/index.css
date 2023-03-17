@@ -9,7 +9,7 @@
 }
 
 html {
-  background-color: #1f2937;
+  @apply bg-bgPrimary;
 }
 
 .outline-text {
