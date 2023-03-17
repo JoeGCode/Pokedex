@@ -22,16 +22,16 @@ const SearchBar: FC<SearchProps> = ({ searchHandler }) => {
 
   return (
     <div className="flex flex-col w-full justify-between mb-4 sm:gap-[5%] sm:flex-row">
-      <div className="w-full relative flex-1">
+      <div className="w-full relative flex flex-1 mb-2 sm:mb-0">
         <input
-          className="w-full rounded-md p-4 mb-2 sm:mb-0"
+          className="w-full rounded-md p-4"
           placeholder="Search Pokemon by name or number"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.currentTarget.value)}
           onKeyUp={(e) => keyUpHandler(e)}
         />
         <button
-          className="absolute top-0 right-4 bottom-0 text-4xl"
+          className="absolute top-0 right-0 bottom-0 px-4 text-4xl bg-white rounded-r-md"
           onClick={() => clearHandler()}
         >
           X
